@@ -36,7 +36,7 @@ if __name__==  "__main__":
     (YowAuthenticationProtocolLayer, YowContactsIqProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer),
     YowAxolotlLayer
     )  + YOWSUP_CORE_LAYERS
-    
+
     stack = YowStack(layers)
     stack.setProp(YowAuthenticationProtocolLayer.PROP_CREDENTIALS, CREDENTIALS)         #setting credentials
     stack.setProp(YowNetworkLayer.PROP_ENDPOINT, YowConstants.ENDPOINTS[0])    #whatsapp server address
@@ -44,7 +44,7 @@ if __name__==  "__main__":
     stack.setProp(YowCoderLayer.PROP_RESOURCE, env.CURRENT_ENV.getResource())          #info about us as WhatsApp client
 
     stack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))   #sending the connect signal
-    
+
     # try:
     stack.loop()
     # except Exception, e:

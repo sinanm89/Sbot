@@ -1,9 +1,12 @@
+from pymongo import MongoClient
 from yowsup.layers.interface                           import YowInterfaceLayer, ProtocolEntityCallback
 from yowsup.layers.protocol_messages.protocolentities  import TextMessageProtocolEntity
 from yowsup.layers.protocol_receipts.protocolentities  import OutgoingReceiptProtocolEntity
 from yowsup.layers.protocol_acks.protocolentities      import OutgoingAckProtocolEntity
 import time
 
+mongo_client = MongoClient('localhost', 27017)
+message_collection = mongo_client['sbot_db']['collection']
 
 class EchoLayer(YowInterfaceLayer):
 
@@ -17,10 +20,13 @@ class EchoLayer(YowInterfaceLayer):
             receipt = OutgoingReceiptProtocolEntity(messageProtocolEntity.getId(), messageProtocolEntity.getFrom(), 'read', messageProtocolEntity.getParticipant())
             # import pdb; pdb.set_trace()
             message = messageProtocolEntity.getBody()
+
             data = {
                 'from': messageProtocolEntity.getFrom(),
                 'message' : message,
                 'time': time.time()}
+
+            message_collection.insert_one(data)
                 # send to a specific user
             outgoingMessageProtocolEntity = TextMessageProtocolEntity(
             message,
