@@ -1,4 +1,4 @@
-from layer_old import EchoLayer
+from layer import EchoLayer
 from yowsup.layers.auth                        import YowAuthenticationProtocolLayer
 from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
 from yowsup.layers.protocol_receipts           import YowReceiptProtocolLayer
@@ -12,6 +12,7 @@ from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
 from yowsup.layers.protocol_media              import YowMediaProtocolLayer
 from yowsup.layers.stanzaregulator             import YowStanzaRegulator
 from yowsup.layers.protocol_receipts           import YowReceiptProtocolLayer
+from yowsup.layers.protocol_contacts           import YowContactsIqProtocolLayer
 from yowsup.layers.protocol_acks               import YowAckProtocolLayer
 from yowsup.layers.logger                      import YowLoggerLayer
 from yowsup.layers.protocol_iq                 import YowIqProtocolLayer
@@ -29,14 +30,10 @@ CREDENTIALS = ("905396815006", "N35sXununbpdtxIKQATBMv8gCrM=") # replace with yo
 
 if __name__==  "__main__":
     from yowsup.layers.axolotl                     import YowAxolotlLayer
-    # layers = (
-    #     EchoLayer,
-    #     (YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer, YowAxolotlLayer)
-    # ) + YOWSUP_CORE_LAYERS
 
     layers = (
     EchoLayer,
-    (YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer),
+    (YowAuthenticationProtocolLayer, YowContactsIqProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer),
     YowAxolotlLayer
     )  + YOWSUP_CORE_LAYERS
     
@@ -51,5 +48,5 @@ if __name__==  "__main__":
     # try:
     stack.loop()
     # except Exception, e:
-        # print '---'
-        # print e
+    #     print '---'
+    #     print e
