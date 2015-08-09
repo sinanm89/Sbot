@@ -6,7 +6,8 @@ from yowsup.layers.protocol_acks.protocolentities      import OutgoingAckProtoco
 import time
 
 mongo_client = MongoClient('localhost', 27017)
-message_collection = mongo_client['sbot_db']['collection']
+message_collection = mongo_client['sbot_db']['received']
+message_sent_collection = mongo_client['sbot_db']['sent']
 
 class EchoLayer(YowInterfaceLayer):
 
@@ -28,40 +29,40 @@ class EchoLayer(YowInterfaceLayer):
 
             message_collection.insert_one(data)
                 # send to a specific user
-            outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-            message,
-            to = messageProtocolEntity.getFrom()
-            )
+            message = 'Hello, Im currently in development. I may be wonky at times. My fathers amazing though, ' \
+                      'let him know and he will fix it in a jiffy.\n' \
+                      'my commands are:\n' \
+                      '    @sbot echo <repeat this back>\n' \
+                      '    @sbot topic\n' \
+                      '    @sbot set topic <your topic here>'
+            receipient = messageProtocolEntity.getFrom()
+
             if '@sbot' in message:
                 # import pdb; pdb.set_trace()
                 if 'help' in message[:11]:
                     message = 'my commands are:\n\t@sbot echo <repeat this back>\t\n@sbot topic\n\t@sbot set topic <your topic here>'
-                    outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                        message,
-                        to = messageProtocolEntity.getFrom()
-                        )
+                    receipient = messageProtocolEntity.getFrom()
                 elif 'topic' in message[:12]:
-                    outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                        self.message_of_chat,
-                        to = messageProtocolEntity.getFrom()
-                        )
+                    message = self.message_of_chat,
+                    receipient = messageProtocolEntity.getFrom()
                 elif 'echo' in message[:11]:
                     message = message[len('@sbot echo '):]
-                    outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                        message,
-                        to = messageProtocolEntity.getFrom()
-                        )
+                    receipient = messageProtocolEntity.getFrom()
                 elif 'set' in message[:10]:
                     if 'topic' in message[:16]:
                         self.message_of_chat = message[len('@sbot set topic '):]
-                        outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                            'setting motd to {}'.format(self.message_of_chat),
-                            to = messageProtocolEntity.getFrom()
-                            )
-            # outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                # message,
-                # to = messageProtocolEntity.getFrom())
+                        message = 'setting motd to {}'.format(self.message_of_chat),
+                        receipient = messageProtocolEntity.getFrom()
 
+            outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                message,
+                to = receipient
+            )
+            data = {
+                'to': receipient,
+                'message' : message,
+                'time': time.time()}
+            message_sent_collection.insert_one(data)
             self.toLower(receipt)
             self.toLower(outgoingMessageProtocolEntity)
 

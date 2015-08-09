@@ -1,3 +1,4 @@
+import time
 from layer import EchoLayer
 from yowsup.layers.auth                        import YowAuthenticationProtocolLayer
 from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
@@ -45,8 +46,15 @@ if __name__==  "__main__":
 
     stack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))   #sending the connect signal
 
-    # try:
-    stack.loop()
-    # except Exception, e:
-    #     print '---'
-    #     print e
+
+    while True:
+        try:
+            # stack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))
+            stack.loop(timeout = 0.5, discrete = 0.5)
+
+        except AuthError as e:
+            print("AuthError")
+            break
+        except Exception as e:
+            print("Other Error")
+            time.sleep(2)
