@@ -1,6 +1,7 @@
 import time
-from layer import EchoLayer
+from layer import EchoLayer, MyProtocolLayer, PassThroughLayer, MyNetworkLayer, MyGroupLayer
 from yowsup.layers.auth                        import YowAuthenticationProtocolLayer
+from yowsup.layers.protocol_groups import YowGroupsProtocolLayer
 from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
 from yowsup.layers.protocol_receipts           import YowReceiptProtocolLayer
 from yowsup.layers.protocol_acks               import YowAckProtocolLayer
@@ -30,13 +31,22 @@ logging.basicConfig(level=logging.DEBUG)
 CREDENTIALS = ("905396815006", "N35sXununbpdtxIKQATBMv8gCrM=") # replace with your phone and password
 
 if __name__==  "__main__":
-    from yowsup.layers.axolotl                     import YowAxolotlLayer
+    from yowsup.layers.axolotl import YowAxolotlLayer
 
     layers = (
-    EchoLayer,
-    (YowAuthenticationProtocolLayer, YowContactsIqProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer),
-    YowAxolotlLayer
-    )  + YOWSUP_CORE_LAYERS
+        EchoLayer,
+        # PassThroughLayer,
+        (YowAuthenticationProtocolLayer,
+         YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer,
+         YowMediaProtocolLayer, YowCallsProtocolLayer, YowIqProtocolLayer, MyGroupLayer),
+        YowAxolotlLayer,
+        YowLoggerLayer,
+        YowCoderLayer,
+        YowCryptLayer,
+        YowStanzaRegulator,
+        YowNetworkLayer
+        )
+    # yowsup/layers/__init__.py line 90 for data
 
     stack = YowStack(layers)
     stack.setProp(YowAuthenticationProtocolLayer.PROP_CREDENTIALS, CREDENTIALS)         #setting credentials
@@ -55,6 +65,6 @@ if __name__==  "__main__":
         except AuthError as e:
             print("AuthError")
             break
-        except Exception as e:
-            print("Other Error")
-            time.sleep(2)
+        # except Exception as e:
+        #     print("Other Error")
+        #     time.sleep(2)
