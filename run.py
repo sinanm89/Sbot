@@ -1,6 +1,7 @@
 import time
 from layer import EchoLayer, MyProtocolLayer, PassThroughLayer, MyNetworkLayer, MyGroupLayer
 from yowsup.layers.auth                        import YowAuthenticationProtocolLayer
+from yowsup.layers.protocol_chatstate import YowChatstateProtocolLayer
 from yowsup.layers.protocol_groups import YowGroupsProtocolLayer
 from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
 from yowsup.layers.protocol_receipts           import YowReceiptProtocolLayer
@@ -36,11 +37,11 @@ if __name__==  "__main__":
     layers = (
         EchoLayer,
         # PassThroughLayer,
-        (YowAuthenticationProtocolLayer,
+        (YowIqProtocolLayer, YowAuthenticationProtocolLayer,
          YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer,
-         YowMediaProtocolLayer, YowCallsProtocolLayer, YowIqProtocolLayer, MyGroupLayer),
-        YowAxolotlLayer,
+         YowMediaProtocolLayer, YowCallsProtocolLayer, YowGroupsProtocolLayer, YowChatstateProtocolLayer),
         YowLoggerLayer,
+        YowAxolotlLayer,
         YowCoderLayer,
         YowCryptLayer,
         YowStanzaRegulator,
