@@ -1,5 +1,6 @@
 import time
-from layer import EchoLayer, MyProtocolLayer, PassThroughLayer, MyNetworkLayer, MyGroupLayer
+from layer import MessageResponseLayer
+from pymongo import MongoClient
 from yowsup.layers.auth                        import YowAuthenticationProtocolLayer
 from yowsup.layers.protocol_chatstate import YowChatstateProtocolLayer
 from yowsup.layers.protocol_groups import YowGroupsProtocolLayer
@@ -35,11 +36,10 @@ if __name__==  "__main__":
     from yowsup.layers.axolotl import YowAxolotlLayer
 
     layers = (
-        EchoLayer,
-        # PassThroughLayer,
-        (YowIqProtocolLayer, YowAuthenticationProtocolLayer,
-         YowMessagesProtocolLayer, YowReceiptProtocolLayer, YowAckProtocolLayer,
-         YowMediaProtocolLayer, YowCallsProtocolLayer, YowGroupsProtocolLayer, YowChatstateProtocolLayer),
+        MessageResponseLayer,
+        (YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer,
+         YowAckProtocolLayer, YowMediaProtocolLayer, YowIqProtocolLayer, YowCallsProtocolLayer,
+         YowGroupsProtocolLayer,),
         YowLoggerLayer,
         YowAxolotlLayer,
         YowCoderLayer,
@@ -57,15 +57,12 @@ if __name__==  "__main__":
 
     stack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))   #sending the connect signal
 
-
     while True:
         try:
-            # stack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))
-            stack.loop(timeout = 0.5, discrete = 0.5)
-
+            stack.loop()
         except AuthError as e:
             print("AuthError")
             break
         # except Exception as e:
         #     print("Other Error")
-        #     time.sleep(2)
+        #     time.sleep(10)
