@@ -87,7 +87,12 @@ class MessageResponseLayer(YowInterfaceLayer):
                         text_msg,
                         to = recipient
                     )
-                self.toLower(receipt)
+
+                # self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
+                self.toLower(messageProtocolEntity.ack())
+                self.toLower(messageProtocolEntity.ack(True))
+
+                # self.toLower(receipt)
                 self.toLower(outgoingMessageProtocolEntity)
         else:
             if messageProtocolEntity.getType() == 'media':
@@ -112,34 +117,30 @@ class MessageResponseLayer(YowInterfaceLayer):
                 future = executor.submit(message_collection.insert_one, data_received)
                 print(future.result())
 
-        self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
-        self.toLower(messageProtocolEntity.ack())
-        self.toLower(messageProtocolEntity.ack(True))
-    #
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):
-        # ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", "delivery", entity.getFrom())
-        # ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", entity.getType(), entity.getFrom())
-        # self.toLower(ack)
         self.toLower(entity.ack())
 
-
-    @ProtocolEntityCallback("message")
-    def onMessage(self, messageProtocolEntity):
-
-        if messageProtocolEntity.getType() == 'text':
-            print "TEXT"
-        elif messageProtocolEntity.getType() == 'media':
-            print "MEDIA"
+    # @ProtocolEntityCallback("receipt")
+    # def onReceipt(self, entity):
+    #     # ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", "delivery", entity.getFrom())
+    #     # ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", entity.getType(), entity.getFrom())
+    #     # self.toLower(ack)
+    #     self.toLower(entity.ack())
+    #
+    #
+    # @ProtocolEntityCallback("message")
+    # def onMessage(self, messageProtocolEntity):
+    #
+    #     if messageProtocolEntity.getType() == 'text':
+    #         print "TEXT"
+    #     elif messageProtocolEntity.getType() == 'media':
+    #         print "MEDIA"
 
         # self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
         # self.toLower(messageProtocolEntity.ack())
         # self.toLower(messageProtocolEntity.ack(True))
 
-
-    @ProtocolEntityCallback("receipt")
-    def onReceipt(self, entity):
-        self.toLower(entity.ack())
 
 
 class MyNetworkLayer(YowNetworkLayer):
