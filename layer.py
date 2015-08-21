@@ -132,9 +132,9 @@ class MessageResponseLayer(YowInterfaceLayer):
         elif messageProtocolEntity.getType() == 'media':
             print "MEDIA"
 
-        self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
-        self.toLower(messageProtocolEntity.ack())
-        self.toLower(messageProtocolEntity.ack(True))
+        # self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
+        # self.toLower(messageProtocolEntity.ack())
+        # self.toLower(messageProtocolEntity.ack(True))
 
 
     @ProtocolEntityCallback("receipt")
