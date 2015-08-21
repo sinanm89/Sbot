@@ -1,8 +1,4 @@
-import time
-from layer import MessageResponseLayer
-from pymongo import MongoClient
-from yowsup.layers.auth                        import YowAuthenticationProtocolLayer
-from yowsup.layers.protocol_chatstate import YowChatstateProtocolLayer
+from layer import MessageResponseLayer, MyNetworkLayer
 from yowsup.layers.protocol_groups import YowGroupsProtocolLayer
 from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
 from yowsup.layers.protocol_receipts           import YowReceiptProtocolLayer
@@ -21,10 +17,10 @@ from yowsup.layers.protocol_acks               import YowAckProtocolLayer
 from yowsup.layers.logger                      import YowLoggerLayer
 from yowsup.layers.protocol_iq                 import YowIqProtocolLayer
 from yowsup.layers.protocol_calls              import YowCallsProtocolLayer
-from yowsup.stacks import YowStack
+from yowsup.layers.axolotl                     import YowAxolotlLayer
 from yowsup.common import YowConstants
 from yowsup.layers import YowLayerEvent
-from yowsup.stacks import YowStack, YOWSUP_CORE_LAYERS
+from yowsup.stacks import YowStack
 from yowsup import env
 
 import logging
@@ -33,7 +29,6 @@ logging.basicConfig(level=logging.DEBUG)
 CREDENTIALS = ("905396815006", "N35sXununbpdtxIKQATBMv8gCrM=") # replace with your phone and password
 
 if __name__==  "__main__":
-    from yowsup.layers.axolotl import YowAxolotlLayer
 
     layers = (
         MessageResponseLayer,
@@ -45,7 +40,7 @@ if __name__==  "__main__":
         YowCoderLayer,
         YowCryptLayer,
         YowStanzaRegulator,
-        YowNetworkLayer
+        MyNetworkLayer
         )
     # yowsup/layers/__init__.py line 90 for data
 

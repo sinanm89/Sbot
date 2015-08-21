@@ -1,4 +1,5 @@
 import random
+import asyncore, socket, logging
 from concurrent.futures import ThreadPoolExecutor
 from pymongo import MongoClient
 from yowsup.layers import YowProtocolLayer, YowLayer
@@ -9,6 +10,7 @@ from yowsup.layers.protocol_receipts.protocolentities  import OutgoingReceiptPro
 from yowsup.layers.protocol_acks.protocolentities      import OutgoingAckProtocolEntity
 import time
 
+logger = logging.getLogger(__name__)
 
 mongo_client = MongoClient('localhost', 27017)
 message_collection = mongo_client['sbot_db']['received']
@@ -18,6 +20,10 @@ class MessageResponseLayer(YowInterfaceLayer):
 
     message_of_chat = "Motc not set"
     g_mode = False
+
+    def disconnect(self):
+        print '==DC'*30
+        super(MessageResponseLayer, self).disconnect()
 
     @ProtocolEntityCallback("message")
     def onMessage(self, messageProtocolEntity):
@@ -64,7 +70,7 @@ class MessageResponseLayer(YowInterfaceLayer):
                                                   "I'm in your phone ;)", "FUCK.", "NPC's Rule!", "sudo rm -rf /*", "I'm at %89",
                                                   "TIGERS BLOOD", "WINNING!", "DID IT.", "Nuri Alco Protect me.", "WITNESS MEEEEEEE",
                                                   "PUT CHO FAITH IN THE LIGHT", "Well met.", "Sorry about that.", "Pro Moves",
-                                                  "Smoke weed everyday"]))
+                                                  "Smoke weed everyday", "subhaneke"]))
 
                 data_sent = {
                     'to': recipient,
@@ -111,3 +117,23 @@ class MessageResponseLayer(YowInterfaceLayer):
         # ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", "delivery", entity.getFrom())
         ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", entity.getType(), entity.getFrom())
         self.toLower(ack)
+
+
+class MyNetworkLayer(YowNetworkLayer):
+
+    def onEvent(self, ev):
+        if ev.getName() == YowNetworkLayer.EVENT_STATE_CONNECT:
+            self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.out_buffer = bytearray()
+            endpoint = self.getProp(self.__class__.PROP_ENDPOINT)
+            logger.debug("Connecting to %s:%s" % endpoint)
+            if self.proxyHandler != None:
+                logger.debug("HttpProxy connect: %s:%d" % endpoint)
+                self.proxyHandler.connect(self, endpoint)
+            else:
+                self.connect(endpoint)
+            return True
+        elif ev.getName() == YowNetworkLayer.EVENT_STATE_DISCONNECT:
+            self.handle_close(ev.getArg("reason") or "Requested")
+            print 'GOT DCD'
+            return True
