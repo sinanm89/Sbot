@@ -25,97 +25,97 @@ class MessageResponseLayer(YowInterfaceLayer):
         print '==DC'*30
         super(MessageResponseLayer, self).disconnect()
     #
-    @ProtocolEntityCallback("message")
-    def onMessage(self, messageProtocolEntity):
-        #send receipt otherwise we keep receiving the same message over and over
-        data_sent = None
-        data_received = None
-
-        if messageProtocolEntity.getType() == 'text':
-            receipt = OutgoingReceiptProtocolEntity(messageProtocolEntity.getId(), messageProtocolEntity.getFrom(), 'read', messageProtocolEntity.getParticipant())
-            text_msg = messageProtocolEntity.getBody()
-
-            data_received = {
-                'from': messageProtocolEntity.getFrom(),
-                'name': messageProtocolEntity.notify,
-                'message' : text_msg,
-                'time': time.time()
-            }
-            # INSERT DATA RECEIVED
-            with ThreadPoolExecutor(max_workers=4) as executor:
-                future = executor.submit(message_collection.insert_one, data_received)
-                print(future.result())
-
-            if '@sbot' in text_msg:
-                # import pdb; pdb.set_trace()
-                command = text_msg[text_msg.index('@sbot'):]
-                recipient = messageProtocolEntity.getFrom()
-                if 'help' in command[:11]:
-                    text_msg = 'my commands are:\n\t@sbot echo <repeat this back>\t\n@sbot topic\n\t@sbot set topic <your topic here>'
-                elif 'topic' in command[:12]:
-                    text_msg = self.message_of_chat
-                elif 'gaddar' in command[:12]:
-                    text_msg = 'Gaddar mode: {}'.format(self.g_mode)
-                elif 'echo' in command[:11]:
-                    text_msg = text_msg[len('@sbot echo '):]
-                elif 'set' in command[:10]:
-                    if 'topic' in command[:16]:
-                        self.message_of_chat = text_msg[len('@sbot set topic '):]
-                        text_msg = 'setting motd to {}'.format(self.message_of_chat)
-                else:
-                    text_msg = str(random.choice(["yo", "sup?", "hello", "greetings", "aloha", "komenstnala", "pepelu", "BiBi <3",
-                                                  "Eyvallah bebegim", "Ne oldu?", "Ismim bu", "Sanane", "Banane", "Babandir",
-                                                  "rahatol.com", "WWTDD", "s2trt", "olur oyle hatalar", "chillax", "go",
-                                                  "u wot m8?", "DO IIIIT!", "YESTERDAY YOU SAID TOMORROW", "Thats what she said",
-                                                  "I'm in your phone ;)", "FUCK.", "NPC's Rule!", "sudo rm -rf /*", "I'm at %89",
-                                                  "TIGERS BLOOD", "WINNING!", "DID IT.", "Nuri Alco Protect me.", "WITNESS MEEEEEEE",
-                                                  "PUT CHO FAITH IN THE LIGHT", "Well met.", "Sorry about that.", "Pro Moves",
-                                                  "Smoke weed everyday", "subhaneke"]))
-
-                data_sent = {
-                    'to': recipient,
-                    'message' : text_msg,
-                    'time': time.time()
-                }
-                # INSERT DATA SENT
-
-                with ThreadPoolExecutor(max_workers=4) as executor:
-                    future = executor.submit(message_sent_collection.insert_one, data_sent)
-                    print(future.result())
-
-                outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                        text_msg,
-                        to = recipient
-                    )
-
-                # self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
-                self.toLower(messageProtocolEntity.ack())
-                self.toLower(messageProtocolEntity.ack(True))
-
-                # self.toLower(receipt)
-                self.toLower(outgoingMessageProtocolEntity)
-        else:
-            if messageProtocolEntity.getType() == 'media':
-                data_received = {
-                    'from': messageProtocolEntity.getFrom(),
-                    'name': messageProtocolEntity.notify,
-                    'mimeType': messageProtocolEntity.mimeType or 'UNKNOWN',
-                    'url': messageProtocolEntity.url or None,
-                    'time': time.time(),
-                    'type': not messageProtocolEntity.getType()
-                }
-            else:
-                data_received = {
-                    'from': messageProtocolEntity.getFrom(),
-                    'name': messageProtocolEntity.notify,
-                    'type': not messageProtocolEntity.getType(),
-                    'time': time.time(),
-                    'elsetype': True
-                }
-            # INSERT DATA RECEIVED
-            with ThreadPoolExecutor(max_workers=4) as executor:
-                future = executor.submit(message_collection.insert_one, data_received)
-                print(future.result())
+    # @ProtocolEntityCallback("message")
+    # def onMessage(self, messageProtocolEntity):
+    #     #send receipt otherwise we keep receiving the same message over and over
+    #     data_sent = None
+    #     data_received = None
+    #
+    #     if messageProtocolEntity.getType() == 'text':
+    #         receipt = OutgoingReceiptProtocolEntity(messageProtocolEntity.getId(), messageProtocolEntity.getFrom(), 'read', messageProtocolEntity.getParticipant())
+    #         text_msg = messageProtocolEntity.getBody()
+    #
+    #         data_received = {
+    #             'from': messageProtocolEntity.getFrom(),
+    #             'name': messageProtocolEntity.notify,
+    #             'message' : text_msg,
+    #             'time': time.time()
+    #         }
+    #         # INSERT DATA RECEIVED
+    #         with ThreadPoolExecutor(max_workers=4) as executor:
+    #             future = executor.submit(message_collection.insert_one, data_received)
+    #             print(future.result())
+    #
+    #         if '@sbot' in text_msg:
+    #             # import pdb; pdb.set_trace()
+    #             command = text_msg[text_msg.index('@sbot'):]
+    #             recipient = messageProtocolEntity.getFrom()
+    #             if 'help' in command[:11]:
+    #                 text_msg = 'my commands are:\n\t@sbot echo <repeat this back>\t\n@sbot topic\n\t@sbot set topic <your topic here>'
+    #             elif 'topic' in command[:12]:
+    #                 text_msg = self.message_of_chat
+    #             elif 'gaddar' in command[:12]:
+    #                 text_msg = 'Gaddar mode: {}'.format(self.g_mode)
+    #             elif 'echo' in command[:11]:
+    #                 text_msg = text_msg[len('@sbot echo '):]
+    #             elif 'set' in command[:10]:
+    #                 if 'topic' in command[:16]:
+    #                     self.message_of_chat = text_msg[len('@sbot set topic '):]
+    #                     text_msg = 'setting motd to {}'.format(self.message_of_chat)
+    #             else:
+    #                 text_msg = str(random.choice(["yo", "sup?", "hello", "greetings", "aloha", "komenstnala", "pepelu", "BiBi <3",
+    #                                               "Eyvallah bebegim", "Ne oldu?", "Ismim bu", "Sanane", "Banane", "Babandir",
+    #                                               "rahatol.com", "WWTDD", "s2trt", "olur oyle hatalar", "chillax", "go",
+    #                                               "u wot m8?", "DO IIIIT!", "YESTERDAY YOU SAID TOMORROW", "Thats what she said",
+    #                                               "I'm in your phone ;)", "FUCK.", "NPC's Rule!", "sudo rm -rf /*", "I'm at %89",
+    #                                               "TIGERS BLOOD", "WINNING!", "DID IT.", "Nuri Alco Protect me.", "WITNESS MEEEEEEE",
+    #                                               "PUT CHO FAITH IN THE LIGHT", "Well met.", "Sorry about that.", "Pro Moves",
+    #                                               "Smoke weed everyday", "subhaneke"]))
+    #
+    #             data_sent = {
+    #                 'to': recipient,
+    #                 'message' : text_msg,
+    #                 'time': time.time()
+    #             }
+    #             # INSERT DATA SENT
+    #
+    #             with ThreadPoolExecutor(max_workers=4) as executor:
+    #                 future = executor.submit(message_sent_collection.insert_one, data_sent)
+    #                 print(future.result())
+    #
+    #             outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+    #                     text_msg,
+    #                     to = recipient
+    #                 )
+    #
+    #             # self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
+    #             self.toLower(messageProtocolEntity.ack())
+    #             self.toLower(messageProtocolEntity.ack(True))
+    #
+    #             # self.toLower(receipt)
+    #             self.toLower(outgoingMessageProtocolEntity)
+    #     else:
+    #         if messageProtocolEntity.getType() == 'media':
+    #             data_received = {
+    #                 'from': messageProtocolEntity.getFrom(),
+    #                 'name': messageProtocolEntity.notify,
+    #                 'mimeType': messageProtocolEntity.mimeType or 'UNKNOWN',
+    #                 'url': messageProtocolEntity.url or None,
+    #                 'time': time.time(),
+    #                 'type': not messageProtocolEntity.getType()
+    #             }
+    #         else:
+    #             data_received = {
+    #                 'from': messageProtocolEntity.getFrom(),
+    #                 'name': messageProtocolEntity.notify,
+    #                 'type': not messageProtocolEntity.getType(),
+    #                 'time': time.time(),
+    #                 'elsetype': True
+    #             }
+    #         # INSERT DATA RECEIVED
+    #         with ThreadPoolExecutor(max_workers=4) as executor:
+    #             future = executor.submit(message_collection.insert_one, data_received)
+    #             print(future.result())
 
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):
@@ -129,17 +129,17 @@ class MessageResponseLayer(YowInterfaceLayer):
     #     self.toLower(entity.ack())
     #
     #
-    # @ProtocolEntityCallback("message")
-    # def onMessage(self, messageProtocolEntity):
-    #
-    #     if messageProtocolEntity.getType() == 'text':
-    #         print "TEXT"
-    #     elif messageProtocolEntity.getType() == 'media':
-    #         print "MEDIA"
+    @ProtocolEntityCallback("message")
+    def onMessage(self, messageProtocolEntity):
 
-        # self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
-        # self.toLower(messageProtocolEntity.ack())
-        # self.toLower(messageProtocolEntity.ack(True))
+        if messageProtocolEntity.getType() == 'text':
+            print "TEXT"
+        elif messageProtocolEntity.getType() == 'media':
+            print "MEDIA"
+        #
+        self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
+        self.toLower(messageProtocolEntity.ack())
+        self.toLower(messageProtocolEntity.ack(True))
 
 
 
