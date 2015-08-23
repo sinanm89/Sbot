@@ -1,3 +1,5 @@
+import datetime
+import sys
 from layer import MessageResponseLayer, MyNetworkLayer
 from yowsup.layers.protocol_groups import YowGroupsProtocolLayer
 from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
@@ -24,12 +26,16 @@ from yowsup.stacks import YowStack
 from yowsup import env
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(filename='log-{}.log'.format(datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z")),level=logging.DEBUG)
 
 CREDENTIALS = ("905396815006", "N35sXununbpdtxIKQATBMv8gCrM=") # replace with your phone and password
 
 if __name__==  "__main__":
 
+    if len(sys.argv) > 1 and 'debug' in sys.argv[1].lower():
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(filename='log-{}.log'.format(datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z")),level=logging.DEBUG)
     layers = (
         MessageResponseLayer,
         (YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer,
