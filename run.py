@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import datetime
 import sys
+from time import sleep
+from axolotl.duplicatemessagexception import DuplicateMessageException
 from layer import MessageResponseLayer, MyNetworkLayer
 from yowsup.layers.protocol_groups import YowGroupsProtocolLayer
 from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
@@ -31,17 +33,12 @@ import logging
 
 CREDENTIALS = ("905396815006", "N35sXununbpdtxIKQATBMv8gCrM=") # replace with your phone and password
 
-if __name__==  "__main__":
 
-    if len(sys.argv) > 1 and 'debug' in sys.argv[1].lower():
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(filename='log-{}.log'.format(datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z")),level=logging.DEBUG)
+def start_whatsapp_server():
     layers = (
         MessageResponseLayer,
-        (YowAuthenticationProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer,
-         YowAckProtocolLayer, YowMediaProtocolLayer, YowIqProtocolLayer, YowCallsProtocolLayer,
-         YowGroupsProtocolLayer,),
+        (YowAuthenticationProtocolLayer, YowIqProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer,
+         YowAckProtocolLayer, YowMediaProtocolLayer, YowCallsProtocolLayer, YowGroupsProtocolLayer,),
         YowLoggerLayer,
         YowAxolotlLayer,
         YowCoderLayer,
@@ -49,12 +46,12 @@ if __name__==  "__main__":
         YowStanzaRegulator,
         MyNetworkLayer
         )
-    # yowsup/layers/__init__.py line 90 for data
 
+    # yowsup/layers/__init__.py line 90 for data
     stack = YowStack(layers)
     stack.setProp(YowAuthenticationProtocolLayer.PROP_CREDENTIALS, CREDENTIALS)         #setting credentials
     stack.setProp(YowNetworkLayer.PROP_ENDPOINT, YowConstants.ENDPOINTS[0])    #whatsapp server address
-    stack.setProp(YowCoderLayer.PROP_DOMAIN, YowConstants.DOMAIN)              
+    stack.setProp(YowCoderLayer.PROP_DOMAIN, YowConstants.DOMAIN)
     stack.setProp(YowCoderLayer.PROP_RESOURCE, env.CURRENT_ENV.getResource())          #info about us as WhatsApp client
 
     stack.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))   #sending the connect signal
@@ -62,9 +59,34 @@ if __name__==  "__main__":
     while True:
         try:
             stack.loop()
+            if stack.getLayer(0).connected == False:
+                break
         except AuthError as e:
             print("AuthError")
             break
         # except Exception as e:
         #     print("Other Error")
         #     time.sleep(10)
+    return True
+
+if __name__==  "__main__":
+
+    if len(sys.argv) > 1 and 'debug' in sys.argv[1].lower():
+        logging.basicConfig(level=logging.DEBUG)
+    elif len(sys.argv) > 1 and 'info' in sys.argv[1].lower():
+        logging.basicConfig(level=logging.INFO)
+    elif len(sys.argv) > 1 and 'error' in sys.argv[1].lower():
+        logging.basicConfig(level=logging.ERROR)
+    else:
+        logging.basicConfig(filename='log-{}.log'.format(datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S%z")),level=logging.DEBUG)
+
+    logger = logging.getLogger(__name__)
+    disconnected = True
+
+    while disconnected:
+        try:
+            disconnected = start_whatsapp_server()
+            logger.warning('disconnected, reconnecting now.'+'===='*30)
+        except DuplicateMessageException, e:
+            logger.error("{}'".format(e))
+            sleep(10)

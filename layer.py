@@ -1,5 +1,6 @@
 import random
 import asyncore, socket, logging
+import datetime
 from concurrent.futures import ThreadPoolExecutor
 from pymongo import MongoClient
 from yowsup.layers import YowProtocolLayer, YowLayer
@@ -16,15 +17,22 @@ mongo_client = MongoClient('localhost', 27017)
 message_collection = mongo_client['sbot_db']['received']
 message_sent_collection = mongo_client['sbot_db']['sent']
 
+response_choice_list= ["yo", "sup?", "hello", "greetings", "aloha", "komenstnala", "pepelu", "BiBi <3",
+                       "Eyvallah bebegim", "Ne oldu?", "Ismim bu", "Sanane", "Banane", "Babandir",
+                       "rahatol.com", "WWTDD", "s2trt", "olur oyle hatalar", "chillax", "go",
+                       "u wot m8?", "DO IIIIT!", "YESTERDAY YOU SAID TOMORROW", "Thats what she said",
+                       "I'm in your phone ;)", "FUCK.", "NPC's Rule!", "sudo rm -rf /*", "I'm at %89",
+                       "TIGERS BLOOD", "WINNING!", "DID IT.", "Nuri Alco Protect me.", "WITNESS MEEEEEEE",
+                       "PUT CHO FAITH IN THE LIGHT", "Well met.", "Sorry about that.", "Pro Moves",
+                       "Smoke weed everyday", "subhaneke", "do yo want to build a snowman?", "LET IT GOOOOOO",
+                       "Han shot first.", "YOU MUST CONSTRUCT ADDITIONAL PYLONS", "mo' money mo' poblems",
+                       "puddi puddi", "<3", ":3", ":)"]
+
 class MessageResponseLayer(YowInterfaceLayer):
 
     message_of_chat = "Motc not set"
     g_mode = False
 
-    def disconnect(self):
-        print '==DC'*30
-        super(MessageResponseLayer, self).disconnect()
-    #
     @ProtocolEntityCallback("message")
     def onMessage(self, messageProtocolEntity):
         #send receipt otherwise we keep receiving the same message over and over
@@ -38,12 +46,13 @@ class MessageResponseLayer(YowInterfaceLayer):
                 'from': messageProtocolEntity.getFrom(),
                 'name': messageProtocolEntity.notify,
                 'message' : text_msg,
-                'time': time.time()
+                'time': datetime.datetime.now(),
             }
+
             # INSERT DATA RECEIVED
             with ThreadPoolExecutor(max_workers=4) as executor:
-                future = executor.submit(message_collection.insert_one, data_received)
-                print(future.result())
+                executor.submit(message_collection.insert_one, data_received)
+                # print(future.result())
 
             if '@sbot' in text_msg:
                 # import pdb; pdb.set_trace()
@@ -61,33 +70,27 @@ class MessageResponseLayer(YowInterfaceLayer):
                     if 'topic' in command[:16]:
                         self.message_of_chat = text_msg[len('@sbot set topic '):]
                         text_msg = 'setting motd to {}'.format(self.message_of_chat)
+                elif 'disconnect' in command:
+                    self.toLower(messageProtocolEntity.ack())
+                    self.toLower(messageProtocolEntity.ack(True))
+                    self.disconnect()
                 else:
-                    text_msg = str(random.choice(["yo", "sup?", "hello", "greetings", "aloha", "komenstnala", "pepelu", "BiBi <3",
-                                                  "Eyvallah bebegim", "Ne oldu?", "Ismim bu", "Sanane", "Banane", "Babandir",
-                                                  "rahatol.com", "WWTDD", "s2trt", "olur oyle hatalar", "chillax", "go",
-                                                  "u wot m8?", "DO IIIIT!", "YESTERDAY YOU SAID TOMORROW", "Thats what she said",
-                                                  "I'm in your phone ;)", "FUCK.", "NPC's Rule!", "sudo rm -rf /*", "I'm at %89",
-                                                  "TIGERS BLOOD", "WINNING!", "DID IT.", "Nuri Alco Protect me.", "WITNESS MEEEEEEE",
-                                                  "PUT CHO FAITH IN THE LIGHT", "Well met.", "Sorry about that.", "Pro Moves",
-                                                  "Smoke weed everyday", "subhaneke"]))
+                    text_msg = str(random.choice(response_choice_list))
 
                 data_sent = {
                     'to': recipient,
                     'message' : text_msg,
-                    'time': time.time()
+                    'time': datetime.datetime.now(),
                 }
                 # INSERT DATA SENT
-
                 with ThreadPoolExecutor(max_workers=4) as executor:
-                    future = executor.submit(message_sent_collection.insert_one, data_sent)
-                    print(future.result())
+                    executor.submit(message_sent_collection.insert_one, data_sent)
 
                 outgoingMessageProtocolEntity = TextMessageProtocolEntity(
                         text_msg,
                         to = recipient
                     )
 
-                # self.toLower(receipt)
                 self.toLower(outgoingMessageProtocolEntity)
         else:
             if messageProtocolEntity.getType() == 'media':
@@ -96,7 +99,7 @@ class MessageResponseLayer(YowInterfaceLayer):
                     'name': messageProtocolEntity.notify,
                     'mimeType': messageProtocolEntity.mimeType or 'UNKNOWN',
                     'url': messageProtocolEntity.url or None,
-                    'time': time.time(),
+                    'time': datetime.datetime.now(),
                     'type': not messageProtocolEntity.getType()
                 }
             else:
@@ -104,13 +107,14 @@ class MessageResponseLayer(YowInterfaceLayer):
                     'from': messageProtocolEntity.getFrom(),
                     'name': messageProtocolEntity.notify,
                     'type': not messageProtocolEntity.getType(),
-                    'time': time.time(),
+                    'time': datetime.datetime.now(),
                     'elsetype': True
                 }
             # INSERT DATA RECEIVED
             with ThreadPoolExecutor(max_workers=4) as executor:
-                future = executor.submit(message_collection.insert_one, data_received)
-                print(future.result())
+                # future = executor.submit(message_collection.insert_one, data_received)
+                executor.submit(message_collection.insert_one, data_received)
+                # print(future.result())
 
         self.toLower(messageProtocolEntity.ack())
         self.toLower(messageProtocolEntity.ack(True))
@@ -118,19 +122,6 @@ class MessageResponseLayer(YowInterfaceLayer):
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):
         self.toLower(entity.ack())
-
-    # @ProtocolEntityCallback("message")
-    # def onMessage(self, messageProtocolEntity):
-    #
-    #     if messageProtocolEntity.getType() == 'text':
-    #         print "TEXT"
-    #     elif messageProtocolEntity.getType() == 'media':
-    #         print "MEDIA"
-    #     #
-    #     self.toLower(messageProtocolEntity.forward(messageProtocolEntity.getFrom()))
-    #     self.toLower(messageProtocolEntity.ack())
-    #     self.toLower(messageProtocolEntity.ack(True))
-
 
 
 class MyNetworkLayer(YowNetworkLayer):
@@ -149,5 +140,4 @@ class MyNetworkLayer(YowNetworkLayer):
             return True
         elif ev.getName() == YowNetworkLayer.EVENT_STATE_DISCONNECT:
             self.handle_close(ev.getArg("reason") or "Requested")
-            print 'GOT DCD'
             return True
