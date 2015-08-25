@@ -4,6 +4,7 @@ import sys
 from time import sleep
 from axolotl.duplicatemessagexception import DuplicateMessageException
 from layer import MessageResponseLayer, MyNetworkLayer
+from yowsup.layers.protocol_chatstate import YowChatstateProtocolLayer
 from yowsup.layers.protocol_groups import YowGroupsProtocolLayer
 from yowsup.layers.protocol_messages           import YowMessagesProtocolLayer
 from yowsup.layers.protocol_receipts           import YowReceiptProtocolLayer
@@ -38,7 +39,7 @@ def start_whatsapp_server():
     layers = (
         MessageResponseLayer,
         (YowAuthenticationProtocolLayer, YowIqProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer,
-         YowAckProtocolLayer, YowMediaProtocolLayer, YowCallsProtocolLayer, YowGroupsProtocolLayer,),
+         YowAckProtocolLayer, YowMediaProtocolLayer, YowCallsProtocolLayer, YowGroupsProtocolLayer, YowChatstateProtocolLayer),
         YowLoggerLayer,
         YowAxolotlLayer,
         YowCoderLayer,

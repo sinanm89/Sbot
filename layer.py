@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from yowsup.layers import YowProtocolLayer, YowLayer
 from yowsup.layers.network import YowNetworkLayer
 from yowsup.layers.interface                           import YowInterfaceLayer, ProtocolEntityCallback
+from yowsup.layers.protocol_chatstate.protocolentities import OutgoingChatstateProtocolEntity, ChatstateProtocolEntity
 from yowsup.layers.protocol_messages.protocolentities  import TextMessageProtocolEntity
 from yowsup.layers.protocol_receipts.protocolentities  import OutgoingReceiptProtocolEntity
 from yowsup.layers.protocol_acks.protocolentities      import OutgoingAckProtocolEntity
@@ -38,7 +39,7 @@ class MessageResponseLayer(YowInterfaceLayer):
         #send receipt otherwise we keep receiving the same message over and over
         data_sent = None
         data_received = None
-
+        self.toLower(OutgoingChatstateProtocolEntity(ChatstateProtocolEntity.STATE_TYPING, messageProtocolEntity.getFrom()))
         if messageProtocolEntity.getType() == 'text':
             text_msg = messageProtocolEntity.getBody()
 
