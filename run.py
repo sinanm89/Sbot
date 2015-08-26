@@ -61,13 +61,14 @@ def start_whatsapp_server():
         try:
             stack.loop()
             if stack.getLayer(0).connected == False:
+                sleep(5)
                 break
         except AuthError as e:
             print("AuthError")
             break
         # except Exception as e:
         #     print("Other Error")
-        #     time.sleep(10)
+
     return True
 
 if __name__==  "__main__":
@@ -90,4 +91,4 @@ if __name__==  "__main__":
             logger.warning('disconnected, reconnecting now.'+'===='*30)
         except DuplicateMessageException, e:
             logger.error("{}'".format(e))
-            sleep(10)
+            sleep(5)

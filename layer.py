@@ -18,7 +18,7 @@ mongo_client = MongoClient('localhost', 27017)
 message_collection = mongo_client['sbot_db']['received']
 message_sent_collection = mongo_client['sbot_db']['sent']
 
-response_choice_list= ["yo", "sup?", "hello", "greetings", "aloha", "komenstnala", "pepelu", "BiBi <3",
+response_choice_list = ["yo", "sup?", "hello", "greetings", "aloha", "komenstnala", "pepelu", "BiBi <3",
                        "Eyvallah bebegim", "Ne oldu?", "Ismim bu", "Sanane", "Banane", "Babandir",
                        "rahatol.com", "WWTDD", "s2trt", "olur oyle hatalar", "chillax", "go",
                        "u wot m8?", "DO IIIIT!", "YESTERDAY YOU SAID TOMORROW", "Thats what she said",
@@ -28,6 +28,9 @@ response_choice_list= ["yo", "sup?", "hello", "greetings", "aloha", "komenstnala
                        "Smoke weed everyday", "subhaneke", "do yo want to build a snowman?", "LET IT GOOOOOO",
                        "Han shot first.", "YOU MUST CONSTRUCT ADDITIONAL PYLONS", "mo' money mo' poblems",
                        "puddi puddi", "<3", ":3", ":)"]
+
+pls_list = ["ballisi?", "anasi?", "anam?", "cicim?", "kucuk parfem?", "tatlim?", "kuzum?", "yavrum?", "canim?", "soyle",
+            "sole.", "suyle", "soyle canisi", "sole ballisi", "sole bebisim", "soyleeeeeee", "yerim seni", "uy", "da"]
 
 class MessageResponseLayer(YowInterfaceLayer):
 
@@ -39,7 +42,11 @@ class MessageResponseLayer(YowInterfaceLayer):
         #send receipt otherwise we keep receiving the same message over and over
         data_sent = None
         data_received = None
+
+        # typing...
         self.toLower(OutgoingChatstateProtocolEntity(ChatstateProtocolEntity.STATE_TYPING, messageProtocolEntity.getFrom()))
+
+        recipient = messageProtocolEntity.getFrom()
         if messageProtocolEntity.getType() == 'text':
             text_msg = messageProtocolEntity.getBody()
 
@@ -58,9 +65,11 @@ class MessageResponseLayer(YowInterfaceLayer):
             if '@sbot' in text_msg:
                 # import pdb; pdb.set_trace()
                 command = text_msg[text_msg.index('@sbot'):]
-                recipient = messageProtocolEntity.getFrom()
+
                 if 'help' in command[:11]:
                     text_msg = 'my commands are:\n\t@sbot echo <repeat this back>\t\n@sbot topic\n\t@sbot set topic <your topic here>'
+                elif 'pls' in command[:10]:
+                    text_msg = str(random.choice(pls_list))
                 elif 'topic' in command[:12]:
                     text_msg = self.message_of_chat
                 elif 'gaddar' in command[:12]:
@@ -103,6 +112,11 @@ class MessageResponseLayer(YowInterfaceLayer):
                     'time': datetime.datetime.now(),
                     'type': not messageProtocolEntity.getType()
                 }
+                outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                        "Thanks for the image.",
+                        to = recipient
+                    )
+                self.toLower(outgoingMessageProtocolEntity)
             else:
                 data_received = {
                     'from': messageProtocolEntity.getFrom(),
