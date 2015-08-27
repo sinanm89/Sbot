@@ -39,7 +39,7 @@ def start_whatsapp_server():
     layers = (
         MessageResponseLayer,
         (YowAuthenticationProtocolLayer, YowIqProtocolLayer, YowMessagesProtocolLayer, YowReceiptProtocolLayer,
-         YowAckProtocolLayer, YowMediaProtocolLayer, YowCallsProtocolLayer, YowGroupsProtocolLayer, YowChatstateProtocolLayer),
+         YowAckProtocolLayer, YowMediaProtocolLayer, YowCallsProtocolLayer, YowChatstateProtocolLayer),
         YowLoggerLayer,
         YowAxolotlLayer,
         YowCoderLayer,

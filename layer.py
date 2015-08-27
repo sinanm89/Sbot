@@ -7,6 +7,7 @@ from yowsup.layers import YowProtocolLayer, YowLayer
 from yowsup.layers.network import YowNetworkLayer
 from yowsup.layers.interface                           import YowInterfaceLayer, ProtocolEntityCallback
 from yowsup.layers.protocol_chatstate.protocolentities import OutgoingChatstateProtocolEntity, ChatstateProtocolEntity
+from yowsup.layers.protocol_groups import YowGroupsProtocolLayer
 from yowsup.layers.protocol_messages.protocolentities  import TextMessageProtocolEntity
 from yowsup.layers.protocol_receipts.protocolentities  import OutgoingReceiptProtocolEntity
 from yowsup.layers.protocol_acks.protocolentities      import OutgoingAckProtocolEntity
@@ -30,7 +31,16 @@ response_choice_list = ["yo", "sup?", "hello", "greetings", "aloha", "komenstnal
                        "puddi puddi", "<3", ":3", ":)"]
 
 pls_list = ["ballisi?", "anasi?", "anam?", "cicim?", "kucuk parfem?", "tatlim?", "kuzum?", "yavrum?", "canim?", "soyle",
-            "sole.", "suyle", "soyle canisi", "sole ballisi", "sole bebisim", "soyleeeeeee", "yerim seni", "uy", "da"]
+            "sole.", "suyle", "soyle canisi", "sole ballisi", "sole bebisim", "soyleeeeeee", "yerim seni", "uy", "da",
+            "bozma moralini pasam", "dusuncelerinde objectif ol.", "biraz ara ver uzaklas durumdan pasam.",
+            "o tatli surati asmanin anlami yok kendini uzme bosuna", "oluruna birak ballisi o zaman", "bi robot yerine arkadasinla konustunmu bu konuyu?",
+            "sagladigim teselli gercek degildir ama Sinanin aksine hep sana geri cevap atarim. Okuz iste.", "cok metaya kacmadan dertleselim bebis",
+            "bozma moralini be gulum", "love you ya <3"]
+
+
+def group_message_logic():
+    pass
+
 
 class MessageResponseLayer(YowInterfaceLayer):
 
@@ -38,21 +48,24 @@ class MessageResponseLayer(YowInterfaceLayer):
     g_mode = False
 
     @ProtocolEntityCallback("message")
-    def onMessage(self, messageProtocolEntity):
+    def onMessage(self, entity):
         #send receipt otherwise we keep receiving the same message over and over
         data_sent = None
         data_received = None
 
         # typing...
-        self.toLower(OutgoingChatstateProtocolEntity(ChatstateProtocolEntity.STATE_TYPING, messageProtocolEntity.getFrom()))
+        self.toLower(OutgoingChatstateProtocolEntity(ChatstateProtocolEntity.STATE_TYPING, entity.getFrom()))
 
-        recipient = messageProtocolEntity.getFrom()
-        if messageProtocolEntity.getType() == 'text':
-            text_msg = messageProtocolEntity.getBody()
+        recipient = entity.getFrom()
+
+        if entity.getType() == 'text':
+            text_msg = entity.getBody()
 
             data_received = {
-                'from': messageProtocolEntity.getFrom(),
-                'name': messageProtocolEntity.notify,
+                # '905372013001-1439233349@g.us'
+                # '905372013001@s.whatsapp.net'
+                'from': entity.getFrom(),
+                'name': entity.notify,
                 'message' : text_msg,
                 'time': datetime.datetime.now(),
             }
@@ -62,9 +75,11 @@ class MessageResponseLayer(YowInterfaceLayer):
                 executor.submit(message_collection.insert_one, data_received)
                 # print(future.result())
 
-            if '@sbot' in text_msg:
+
+
+            if not entity.isGroupMessage() or (entity.isGroupMessage() and '@sbot' in text_msg):
                 # import pdb; pdb.set_trace()
-                command = text_msg[text_msg.index('@sbot'):]
+                command = text_msg[text_msg.index('@sbot'):] if entity.isGroupMessage() else text_msg[:20]
 
                 if 'help' in command[:11]:
                     text_msg = 'my commands are:\n\t@sbot echo <repeat this back>\t\n@sbot topic\n\t@sbot set topic <your topic here>'
@@ -81,8 +96,8 @@ class MessageResponseLayer(YowInterfaceLayer):
                         self.message_of_chat = text_msg[len('@sbot set topic '):]
                         text_msg = 'setting motd to {}'.format(self.message_of_chat)
                 elif 'disconnect' in command:
-                    self.toLower(messageProtocolEntity.ack())
-                    self.toLower(messageProtocolEntity.ack(True))
+                    self.toLower(entity.ack())
+                    self.toLower(entity.ack(True))
                     self.disconnect()
                 else:
                     text_msg = str(random.choice(response_choice_list))
@@ -103,14 +118,14 @@ class MessageResponseLayer(YowInterfaceLayer):
 
                 self.toLower(outgoingMessageProtocolEntity)
         else:
-            if messageProtocolEntity.getType() == 'media':
+            if entity.getType() == 'media':
                 data_received = {
-                    'from': messageProtocolEntity.getFrom(),
-                    'name': messageProtocolEntity.notify,
-                    'mimeType': messageProtocolEntity.mimeType or 'UNKNOWN',
-                    'url': messageProtocolEntity.url or None,
+                    'from': entity.getFrom(),
+                    'name': entity.notify,
+                    'mimeType': entity.mimeType or 'UNKNOWN',
+                    'url': entity.url or None,
                     'time': datetime.datetime.now(),
-                    'type': not messageProtocolEntity.getType()
+                    'type': not entity.getType()
                 }
                 outgoingMessageProtocolEntity = TextMessageProtocolEntity(
                         "Thanks for the image.",
@@ -119,9 +134,9 @@ class MessageResponseLayer(YowInterfaceLayer):
                 self.toLower(outgoingMessageProtocolEntity)
             else:
                 data_received = {
-                    'from': messageProtocolEntity.getFrom(),
-                    'name': messageProtocolEntity.notify,
-                    'type': not messageProtocolEntity.getType(),
+                    'from': entity.getFrom(),
+                    'name': entity.notify,
+                    'type': not entity.getType(),
                     'time': datetime.datetime.now(),
                     'elsetype': True
                 }
@@ -131,8 +146,8 @@ class MessageResponseLayer(YowInterfaceLayer):
                 executor.submit(message_collection.insert_one, data_received)
                 # print(future.result())
 
-        self.toLower(messageProtocolEntity.ack())
-        self.toLower(messageProtocolEntity.ack(True))
+        self.toLower(entity.ack())
+        self.toLower(entity.ack(True))
 
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):
