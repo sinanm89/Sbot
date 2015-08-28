@@ -1,6 +1,7 @@
 import random
 import asyncore, socket, logging
 import datetime
+import concurrent
 from concurrent.futures import ThreadPoolExecutor
 from pymongo import MongoClient
 from yowsup.layers import YowProtocolLayer, YowLayer
@@ -16,6 +17,7 @@ import time
 logger = logging.getLogger(__name__)
 
 mongo_client = MongoClient('localhost', 27017)
+chat_topics = mongo_client['sbot_db']['topics']
 message_collection = mongo_client['sbot_db']['received']
 message_sent_collection = mongo_client['sbot_db']['sent']
 
@@ -44,7 +46,6 @@ def group_message_logic():
 
 class MessageResponseLayer(YowInterfaceLayer):
 
-    message_of_chat = "Motc not set"
     g_mode = False
 
     @ProtocolEntityCallback("message")
@@ -73,12 +74,9 @@ class MessageResponseLayer(YowInterfaceLayer):
             # INSERT DATA RECEIVED
             with ThreadPoolExecutor(max_workers=4) as executor:
                 executor.submit(message_collection.insert_one, data_received)
-                # print(future.result())
-
-
 
             if not entity.isGroupMessage() or (entity.isGroupMessage() and '@sbot' in text_msg):
-                # import pdb; pdb.set_trace()
+                message_sent = False
                 command = text_msg[text_msg.index('@sbot'):] if entity.isGroupMessage() else text_msg[:20]
 
                 if 'help' in command[:11]:
@@ -86,15 +84,38 @@ class MessageResponseLayer(YowInterfaceLayer):
                 elif 'pls' in command[:10]:
                     text_msg = str(random.choice(pls_list))
                 elif 'topic' in command[:12]:
-                    text_msg = self.message_of_chat
+                    message_sent = True
+                    def process_result(future):
+                        result = future.result()
+                        if result == None:
+                            text_msg = 'Motc not set.'
+                        else:
+                            text_msg = future.result().get('topic') or 'motc is weird'
+                        outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                            text_msg,
+                            to = recipient
+                        )
+                        self.toLower(outgoingMessageProtocolEntity)
+                    with ThreadPoolExecutor(max_workers=4) as executor:
+                        search_jid = {"jid":recipient}
+                        executor.submit(chat_topics.find_one, search_jid).add_done_callback(process_result)
                 elif 'gaddar' in command[:12]:
                     text_msg = 'Gaddar mode: {}'.format(self.g_mode)
                 elif 'echo' in command[:11]:
                     text_msg = text_msg[len('@sbot echo '):]
                 elif 'set' in command[:10]:
                     if 'topic' in command[:16]:
-                        self.message_of_chat = text_msg[len('@sbot set topic '):]
-                        text_msg = 'setting motd to {}'.format(self.message_of_chat)
+                        topic = text_msg[len('@sbot set topic '):]
+                        with ThreadPoolExecutor(max_workers=4) as executor:
+                            search_jid = {"jid":recipient}
+                            update_data = {"jid": recipient,
+                                           "topic": topic,
+                                           "set_by": entity.participant,
+                                           "time": datetime.datetime.now(),
+
+                                           }
+                            executor.submit(chat_topics.update, search_jid, update_data, True)
+                        text_msg = 'setting motd to {}'.format(topic)
                 elif 'disconnect' in command:
                     self.toLower(entity.ack())
                     self.toLower(entity.ack(True))
@@ -111,12 +132,12 @@ class MessageResponseLayer(YowInterfaceLayer):
                 with ThreadPoolExecutor(max_workers=4) as executor:
                     executor.submit(message_sent_collection.insert_one, data_sent)
 
-                outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                        text_msg,
-                        to = recipient
-                    )
-
-                self.toLower(outgoingMessageProtocolEntity)
+                if not message_sent:
+                    outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+                            text_msg,
+                            to = recipient
+                        )
+                    self.toLower(outgoingMessageProtocolEntity)
         else:
             if entity.getType() == 'media':
                 data_received = {
