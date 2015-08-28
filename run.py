@@ -80,7 +80,7 @@ if __name__==  "__main__":
     elif len(sys.argv) > 1 and 'error' in sys.argv[1].lower():
         logging.basicConfig(level=logging.ERROR)
     else:
-        logging.basicConfig(filename='log-{}.log'.format(datetime.datetime.now().strftime("%d-%m-%YT%H:%M:%S%z")),level=logging.WARNING)
+        logging.basicConfig(filename='log-{}.log'.format(datetime.datetime.now().strftime("%d-%m-%YT%H:%M:%S%z")),level=logging.DEBUG)
 
     logger = logging.getLogger(__name__)
     disconnected = True
