@@ -80,7 +80,15 @@ class MessageResponseLayer(YowInterfaceLayer):
                 command = text_msg[text_msg.index('@sbot'):] if entity.isGroupMessage() else text_msg[:20]
 
                 if 'help' in command[:11]:
-                    text_msg = 'my commands are:\n\t@sbot echo <repeat this back>\t\n@sbot topic\n\t@sbot set topic <your topic here>'
+                    text_msg = 'my commands are:\n\t' \
+                               '@sbot {just talk randomly}\n\t' \
+                               '@sbot echo <repeat this back>\n\t' \
+                               '@sbot topic {View topic for current chatroom}\n\t' \
+                               '@sbot set topic <your topic here> {set topic for current room}\n\t' \
+                               '@sbot pls {sbot will listen but sbot cannot love <3 ...yet}\n\t' \
+                               '@sbot gaddarmode {Not ready yet.}\n\t' \
+                               '@sbot list {Not ready yet. list users that will be notified of a certain chat point}\n\t' \
+                               ''
                 elif 'pls' in command[:10]:
                     text_msg = str(random.choice(pls_list))
                 elif 'topic' in command[:12]:
@@ -99,6 +107,7 @@ class MessageResponseLayer(YowInterfaceLayer):
                     with ThreadPoolExecutor(max_workers=4) as executor:
                         search_jid = {"jid":recipient}
                         executor.submit(chat_topics.find_one, search_jid).add_done_callback(process_result)
+
                 elif 'gaddar' in command[:12]:
                     text_msg = 'Gaddar mode: {}'.format(self.g_mode)
                 elif 'echo' in command[:11]:
