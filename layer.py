@@ -98,7 +98,7 @@ class MessageResponseLayer(YowInterfaceLayer):
                         if result == None:
                             text_msg = 'Motc not set.'
                         else:
-                            text_msg = future.result().get('topic') or 'motc is weird'
+                            text_msg = future.result().get('topic') or 'Motc is weird'
                         outgoingMessageProtocolEntity = TextMessageProtocolEntity(
                             text_msg,
                             to = recipient
@@ -124,7 +124,7 @@ class MessageResponseLayer(YowInterfaceLayer):
 
                                            }
                             executor.submit(chat_topics.update, search_jid, update_data, True)
-                        text_msg = 'setting motd to {}'.format(topic)
+                        text_msg = 'Setting motc to {}'.format(topic)
                 elif 'disconnect' in command:
                     self.toLower(entity.ack())
                     self.toLower(entity.ack(True))
