@@ -4,6 +4,7 @@ import datetime
 import concurrent
 from concurrent.futures import ThreadPoolExecutor
 from pymongo import MongoClient
+from unidecode import unidecode
 from yowsup.layers import YowProtocolLayer, YowLayer
 from yowsup.layers.network import YowNetworkLayer
 from yowsup.layers.interface                           import YowInterfaceLayer, ProtocolEntityCallback
@@ -60,7 +61,7 @@ class MessageResponseLayer(YowInterfaceLayer):
         recipient = entity.getFrom()
 
         if entity.getType() == 'text':
-            text_msg = entity.getBody()
+            text_msg = unidecode(entity.getBody())
 
             data_received = {
                 # '905372013001-1439233349@g.us'
