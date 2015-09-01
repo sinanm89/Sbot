@@ -89,6 +89,6 @@ if __name__==  "__main__":
         try:
             disconnected = start_whatsapp_server()
             logger.warning('disconnected, reconnecting now.'+'===='*30)
-        except DuplicateMessageException, e:
-            logger.error("{}'".format(e))
+        except DuplicateMessageException:
+            logger.error("{}'".format('Duplicate found'))
             sleep(5)
