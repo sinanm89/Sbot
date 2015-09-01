@@ -67,7 +67,7 @@ class MessageResponseLayer(YowInterfaceLayer):
 
         if entity.getType() == 'text':
             text_body = entity.getBody()
-            text_body = text_body.decode('unicode-escape')
+            text_body = text_body.decode('utf8')
             text_msg = unidecode(text_body)
 
             data_received = {
