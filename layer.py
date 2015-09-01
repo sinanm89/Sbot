@@ -51,6 +51,11 @@ class MessageResponseLayer(YowInterfaceLayer):
 
     @ProtocolEntityCallback("message")
     def onMessage(self, entity):
+
+        #  TODO: GADDARMODE
+       #  TODO: LIST
+       #  TODO: REPLY TO USER
+
         #send receipt otherwise we keep receiving the same message over and over
         data_sent = None
         data_received = None
@@ -97,9 +102,9 @@ class MessageResponseLayer(YowInterfaceLayer):
                     def process_result(future):
                         result = future.result()
                         if result == None:
-                            text_msg = 'Motc not set.'
+                            text_msg = 'No topics present.'
                         else:
-                            text_msg = future.result().get('topic') or 'Motc is weird'
+                            text_msg = future.result().get('topic') or 'Topic is weird'
                         outgoingMessageProtocolEntity = TextMessageProtocolEntity(
                             text_msg,
                             to = recipient
@@ -125,7 +130,7 @@ class MessageResponseLayer(YowInterfaceLayer):
 
                                            }
                             executor.submit(chat_topics.update, search_jid, update_data, True)
-                        text_msg = 'Setting motc to {}'.format(topic)
+                        text_msg = 'Topic is "{}" type "@sbot topic" to view it again.'.format(topic)
                 elif 'disconnect' in command:
                     self.toLower(entity.ack())
                     self.toLower(entity.ack(True))
