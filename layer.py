@@ -94,8 +94,9 @@ class MessageResponseLayer(YowInterfaceLayer):
                 command = text_msg[text_msg.index('@sbot'):] if entity.isGroupMessage() else text_msg[:20]
 
                 if 'help' in command[:11]:
-                    text_msg = 'my commands are:\n  ' \
+                    text_msg = u'my commands are:\n  ' \
                                '@sbot {just talk randomly}\n  ' \
+                               '@sbot clap {duh.}\n  ' \
                                '@sbot echo <repeat this back>\n  ' \
                                '@sbot topic {View topic for current chatroom}\n  ' \
                                '@sbot set topic <your topic here> {set topic for current room}\n  ' \
@@ -126,6 +127,8 @@ class MessageResponseLayer(YowInterfaceLayer):
                     text_msg = 'Gaddar mode: {}'.format(self.g_mode)
                 elif 'echo' in command[:11]:
                     text_msg = text_msg[len('@sbot echo '):]
+                elif 'clap' in command[:11]:
+                    text_msg = u"\U0001F44F\U0001F3FB ... \U0001F44F\U0001F3FB ... \U0001F44F\U0001F3FB".encode('utf-8')
                 elif 'set' in command[:10]:
                     if 'topic' in command[:16]:
                         topic = text_msg[len('@sbot set topic '):]
