@@ -66,7 +66,9 @@ class MessageResponseLayer(YowInterfaceLayer):
         recipient = entity.getFrom()
 
         if entity.getType() == 'text':
-            text_msg = unidecode(entity.getBody())
+            text_body = entity.getBody()
+            text_body = text_body.decode('unicode-escape')
+            text_msg = unidecode(text_body)
 
             data_received = {
                 # '905372013001-1439233349@g.us'
