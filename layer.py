@@ -5,6 +5,7 @@ import concurrent
 from concurrent.futures import ThreadPoolExecutor
 from pymongo import MongoClient
 from unidecode import unidecode
+from yowsup_utils import check as protocol_check
 from yowsup.layers import YowProtocolLayer, YowLayer
 from yowsup.layers.network import YowNetworkLayer
 from yowsup.layers.interface                           import YowInterfaceLayer, ProtocolEntityCallback
@@ -71,6 +72,7 @@ class MessageResponseLayer(YowInterfaceLayer):
 
         recipient = entity.getFrom()
 
+        protocol_check()
         if entity.getType() == 'text':
             text_body = entity.getBody()
             text_body = text_body.decode('utf8')
