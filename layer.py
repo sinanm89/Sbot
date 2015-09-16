@@ -48,10 +48,6 @@ gaddar_mode = ["simdi sie.", "hadi siktir git simdi", "akilli ol", "sittimin pez
                "Beni bunla ayni konusmaya alanin ailesine iki porsyon kanser", "yarraaam"]
 
 
-def group_message_logic():
-    pass
-
-
 class MessageResponseLayer(YowInterfaceLayer):
 
     g_mode = False
@@ -176,11 +172,11 @@ class MessageResponseLayer(YowInterfaceLayer):
                     'time': datetime.datetime.now(),
                     'type': not entity.getType()
                 }
-                outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                        "Thanks for the image.",
-                        to = recipient
-                    )
-                self.toLower(outgoingMessageProtocolEntity)
+#                outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+#                        "Thanks for the image.",
+#                        to = recipient
+#                    )
+#                self.toLower(outgoingMessageProtocolEntity)
             else:
                 data_received = {
                     'from': entity.getFrom(),
