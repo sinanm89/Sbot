@@ -76,9 +76,9 @@ if __name__==  "__main__":
     if len(sys.argv) > 1 and 'debug' in sys.argv[1].lower():
         logging.basicConfig(level=logging.DEBUG)
     elif len(sys.argv) > 1 and 'info' in sys.argv[1].lower():
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(filename='log-{}.log'.format(datetime.datetime.now().strftime("%d-%m-%YT%H:%M:%S%z")), level=logging.INFO)
     elif len(sys.argv) > 1 and 'error' in sys.argv[1].lower():
-        logging.basicConfig(level=logging.ERROR)
+        logging.basicConfig(filename='log-{}.log'.format(datetime.datetime.now().strftime("%d-%m-%YT%H:%M:%S%z")), level=logging.ERROR)
     else:
         logging.basicConfig(filename='log-{}.log'.format(datetime.datetime.now().strftime("%d-%m-%YT%H:%M:%S%z")),level=logging.DEBUG)
 
@@ -89,6 +89,6 @@ if __name__==  "__main__":
         try:
             disconnected = start_whatsapp_server()
             logger.warning('disconnected, reconnecting now.'+'===='*30)
-        except DuplicateMessageException, e:
-            logger.error("{}'".format(e))
+        except DuplicateMessageException:
+            logger.error("{}'".format('Duplicate found'))
             sleep(5)

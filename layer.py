@@ -5,6 +5,7 @@ import concurrent
 from concurrent.futures import ThreadPoolExecutor
 from pymongo import MongoClient
 from unidecode import unidecode
+from yowsup_utils import check as protocol_check
 from yowsup.layers import YowProtocolLayer, YowLayer
 from yowsup.layers.network import YowNetworkLayer
 from yowsup.layers.interface                           import YowInterfaceLayer, ProtocolEntityCallback
@@ -40,9 +41,11 @@ pls_list = ["ballisi?", "anasi?", "anam?", "cicim?", "kucuk parfem?", "tatlim?",
             "sagladigim teselli gercek degildir ama Sinanin aksine hep sana geri cevap atarim. Okuz iste.", "cok metaya kacmadan dertleselim bebis",
             "bozma moralini be gulum", "love you ya <3"]
 
-
-def group_message_logic():
-    pass
+gaddar_mode = ["simdi sie.", "hadi siktir git simdi", "akilli ol", "sittimin pezevengi",
+               "ulan bunun da babasi cop kutusuna bosalsa 20 kusur yilda daha zeki bisi cikardi ortaya", "arkadas orospu olma ozgurlugunu kullanmis hll",
+               "sana girsin", "gotum.", "surda zaten 30 tane kelime ile iletisime geciriyoruz illaki birini kufur yaptirican.",
+               "tayyip bile daha sempatik bu itoglundan", "bi siktir git.", "actirma agzimi gotun yarilir.", "iki elim olsa da seni bi dovsem keske",
+               "Beni bunla ayni konusmaya alanin ailesine iki porsyon kanser", "yarraaam"]
 
 
 class MessageResponseLayer(YowInterfaceLayer):
@@ -53,8 +56,8 @@ class MessageResponseLayer(YowInterfaceLayer):
     def onMessage(self, entity):
 
         #  TODO: GADDARMODE
-       #  TODO: LIST
-       #  TODO: REPLY TO USER
+        #  TODO: LIST
+        #  TODO: REPLY TO USER
 
         #send receipt otherwise we keep receiving the same message over and over
         data_sent = None
@@ -65,9 +68,10 @@ class MessageResponseLayer(YowInterfaceLayer):
 
         recipient = entity.getFrom()
 
+        protocol_check()
         if entity.getType() == 'text':
             text_body = entity.getBody()
-            text_body = text_body.decode('unicode-escape')
+            text_body = text_body.decode('utf8')
             text_msg = unidecode(text_body)
 
             data_received = {
@@ -88,14 +92,15 @@ class MessageResponseLayer(YowInterfaceLayer):
                 command = text_msg[text_msg.index('@sbot'):] if entity.isGroupMessage() else text_msg[:20]
 
                 if 'help' in command[:11]:
-                    text_msg = 'my commands are:\n\t' \
-                               '@sbot {just talk randomly}\n\t' \
-                               '@sbot echo <repeat this back>\n\t' \
-                               '@sbot topic {View topic for current chatroom}\n\t' \
-                               '@sbot set topic <your topic here> {set topic for current room}\n\t' \
-                               '@sbot pls {sbot will listen but sbot cannot love <3 ...yet}\n\t' \
-                               '@sbot gaddarmode {Not ready yet.}\n\t' \
-                               '@sbot list {Not ready yet. list users that will be notified of a certain chat point}\n\t' \
+                    text_msg = u'my commands are:\n  ' \
+                               '@sbot {just talk randomly}\n  ' \
+                               '@sbot clap {duh.}\n  ' \
+                               '@sbot echo <repeat this back>\n  ' \
+                               '@sbot topic {View topic for current chatroom}\n  ' \
+                               '@sbot set topic <your topic here> {set topic for current room}\n  ' \
+                               '@sbot pls {sbot will listen but sbot cannot love <3 ...yet}\n  ' \
+                               '@sbot gaddarmode {Not ready yet.}\n  ' \
+                               '@sbot list {Not ready yet. list users that will be notified of a certain chat point}\n  ' \
                                ''
                 elif 'pls' in command[:10]:
                     text_msg = str(random.choice(pls_list))
@@ -120,6 +125,8 @@ class MessageResponseLayer(YowInterfaceLayer):
                     text_msg = 'Gaddar mode: {}'.format(self.g_mode)
                 elif 'echo' in command[:11]:
                     text_msg = text_msg[len('@sbot echo '):]
+                elif 'clap' in command[:11]:
+                    text_msg = u"\U0001F44F\U0001F3FB ... \U0001F44F\U0001F3FB ... \U0001F44F\U0001F3FB".encode('utf-8')
                 elif 'set' in command[:10]:
                     if 'topic' in command[:16]:
                         topic = text_msg[len('@sbot set topic '):]
@@ -165,11 +172,11 @@ class MessageResponseLayer(YowInterfaceLayer):
                     'time': datetime.datetime.now(),
                     'type': not entity.getType()
                 }
-                outgoingMessageProtocolEntity = TextMessageProtocolEntity(
-                        "Thanks for the image.",
-                        to = recipient
-                    )
-                self.toLower(outgoingMessageProtocolEntity)
+#                outgoingMessageProtocolEntity = TextMessageProtocolEntity(
+#                        "Thanks for the image.",
+#                        to = recipient
+#                    )
+#                self.toLower(outgoingMessageProtocolEntity)
             else:
                 data_received = {
                     'from': entity.getFrom(),
